@@ -316,6 +316,14 @@ button:
       remote_transmitter.transmit_onkyori:
         data: 0x170
   - platform: template
+    name: Funkbus
+    on_press:
+      remote_transmitter.transmit_funkbus:
+        serial: 0x12345
+        command: 4
+        group: 0
+        action: 2
+  - platform: template
     name: Toto
     on_press:
       - remote_transmitter.transmit_toto:

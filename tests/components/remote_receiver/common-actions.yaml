@@ -58,6 +58,11 @@ on_dyson:
     - logger.log:
         format: "on_dyson: %u %u"
         args: ["x.code", "x.index"]
+on_funkbus:
+  then:
+    - logger.log:
+        format: "on_funkbus: %lu %u %u %u"
+        args: ["long(x.serial)", "x.command", "x.group", "x.action"]
 on_gobox:
   then:
     - logger.log:

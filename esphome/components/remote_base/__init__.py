@@ -9,6 +9,7 @@ from esphome.components.const import CONF_REMOTE_ID
 from esphome.config_helpers import filter_source_files_from_defines
 import esphome.config_validation as cv
 from esphome.const import (
+    CONF_ACTION,
     CONF_ADDRESS,
     CONF_BATTERY_LEVEL,
     CONF_BUTTON,
@@ -888,6 +889,72 @@ register_protocol_action(
     (CONF_CODE, "code", cg.uint16),
     (CONF_INDEX, "index", cg.uint8),
 )
+
+# Funkbus (Berker, Gira, Jung), also sold as Instafunk
+FunkbusData, FunkbusBinarySensor, FunkbusTrigger, FunkbusAction, FunkbusDumper = (
+    declare_protocol("Funkbus")
+)
+CONF_SERIAL = "serial"
+CONF_BATTERY_LOW = "battery_low"
+CONF_LONGPRESS = "longpress"
+CONF_REPEATED = "repeated"
+FUNKBUS_SCHEMA = cv.Schema(
+    {
+        cv.Required(CONF_SERIAL): cv.hex_int_range(0, 0xFFFFF),
+        cv.Required(CONF_COMMAND): cv.hex_int_range(0, 0x7),
+        cv.Required(CONF_GROUP): cv.hex_int_range(0, 0x3),
+        cv.Required(CONF_ACTION): cv.hex_int_range(0, 0x3),
+        cv.Optional(CONF_BATTERY_LOW, default=False): cv.boolean,
+        cv.Optional(CONF_REPEATED, default=False): cv.boolean,
+        cv.Optional(CONF_LONGPRESS, default=False): cv.boolean,
+    }
+)
+
+
+@register_binary_sensor("funkbus", FunkbusBinarySensor, FUNKBUS_SCHEMA)
+def funkbus_binary_sensor(var, config):
+    cg.add(
+        var.set_data(
+            cg.StructInitializer(
+                FunkbusData,
+                ("serial", config[CONF_SERIAL]),
+                ("command", config[CONF_COMMAND]),
+                ("group", config[CONF_GROUP]),
+                ("action", config[CONF_ACTION]),
+                ("battery_low", config[CONF_BATTERY_LOW]),
+                ("repeated", config[CONF_REPEATED]),
+                ("longpress", config[CONF_LONGPRESS]),
+            )
+        )
+    )
+
+
+@register_trigger("funkbus", FunkbusTrigger, FunkbusData)
+def funkbus_trigger(var, config):
+    pass
+
+
+@register_dumper("funkbus", FunkbusDumper)
+def funkbus_dumper(var, config):
+    pass
+
+
+@register_action("funkbus", FunkbusAction, FUNKBUS_SCHEMA)
+async def funkbus_action(var, config, args):
+    template_ = await cg.templatable(config[CONF_SERIAL], args, cg.uint32)
+    cg.add(var.set_serial(template_))
+    template_ = await cg.templatable(config[CONF_COMMAND], args, cg.uint8)
+    cg.add(var.set_command(template_))
+    template_ = await cg.templatable(config[CONF_GROUP], args, cg.uint8)
+    cg.add(var.set_group(template_))
+    template_ = await cg.templatable(config[CONF_ACTION], args, cg.uint8)
+    cg.add(var.set_action(template_))
+    template_ = await cg.templatable(config[CONF_BATTERY_LOW], args, cg.bool_)
+    cg.add(var.set_battery_low(template_))
+    template_ = await cg.templatable(config[CONF_REPEATED], args, cg.bool_)
+    cg.add(var.set_repeated(template_))
+    template_ = await cg.templatable(config[CONF_LONGPRESS], args, cg.bool_)
+    cg.add(var.set_longpress(template_))
 
 
 # JVC
