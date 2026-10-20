@@ -323,6 +323,18 @@ button:
         command: 4
         group: 0
         action: 2
+        repeated: false
+        longpress: false
+  - platform: template
+    name: Funkbus long press repeat
+    on_press:
+      remote_transmitter.transmit_funkbus:
+        serial: 0x12345
+        command: 4
+        group: 0
+        action: 2
+        repeated: true
+        longpress: true
   - platform: template
     name: Toto
     on_press:

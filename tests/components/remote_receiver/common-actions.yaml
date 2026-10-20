@@ -61,8 +61,8 @@ on_dyson:
 on_funkbus:
   then:
     - logger.log:
-        format: "on_funkbus: %lu %u %u %u"
-        args: ["long(x.serial)", "x.command", "x.group", "x.action"]
+        format: "on_funkbus: %lu %u %u %u %u %u"
+        args: ["long(x.serial)", "x.command", "x.group", "x.action", "x.repeated", "x.longpress"]
 on_gobox:
   then:
     - logger.log:
