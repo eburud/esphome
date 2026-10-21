@@ -1,4 +1,5 @@
 #include "funkbus_protocol.h"
+#include "esphome/core/helpers.h"
 #include "esphome/core/log.h"
 
 namespace esphome::remote_base {
@@ -42,13 +43,6 @@ void set_bits_reflect(uint8_t *buf, unsigned start, unsigned len, uint32_t value
   for (unsigned i = 0; i < len; i++) {
     set_bit(buf, start + i, (value >> i) & 1);
   }
-}
-
-uint8_t xor_bytes(const uint8_t *buf, unsigned n) {
-  uint8_t result = 0;
-  for (unsigned i = 0; i < n; i++)
-    result ^= buf[i];
-  return result;
 }
 
 uint8_t parity8(uint8_t byte) {
