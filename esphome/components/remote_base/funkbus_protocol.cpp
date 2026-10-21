@@ -2,6 +2,8 @@
 #include "esphome/core/helpers.h"
 #include "esphome/core/log.h"
 
+#include <cinttypes>
+
 namespace esphome::remote_base {
 
 ESPHOME_LOG_TAG(TAG, "remote.funkbus");

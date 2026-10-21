@@ -1,10 +1,14 @@
 #include <gtest/gtest.h>
+#include <cstdlib>
+#include <vector>
 #include "esphome/components/remote_base/funkbus_protocol.h"
 
 namespace esphome::remote_base::testing {
 
 namespace {
 
+constexpr int32_t SHORT_US = 500;
+constexpr int32_t LONG_US = 1000;
 constexpr int32_t IDLE_US = 10000;
 
 FunkbusData make(uint32_t serial, uint8_t command) {
@@ -79,21 +83,22 @@ TEST(FunkbusProtocolTest, RejectsTruncatedFrame) {
 }
 
 TEST(FunkbusProtocolTest, RejectsBadChecksum) {
-  RawTimings timings = encode(make(0x12345, 4));
-  // Turn the first data bit (a long symbol for 0, two short symbols for 1) into its opposite
-  RawTimings flipped(timings.begin(), timings.begin() + 1);
-  size_t i = 1;
-  if (std::abs(timings[i]) == 1000) {
-    flipped.push_back(timings[i] / 2);
-    flipped.push_back(-timings[i] / 2);
-    i += 1;
-  } else {
-    flipped.push_back(timings[i] * 2);
-    i += 2;
+  const RawTimings timings = encode(make(0x12345, 4));
+  // Read the bits back: two short symbols are a 1, one long symbol is a 0
+  std::vector<bool> bits;
+  for (size_t i = 1; i < timings.size(); i += bits.back() ? 2 : 1)
+    bits.push_back(std::abs(timings[i]) == SHORT_US);
+  ASSERT_EQ(bits.size(), 48u);
+  // Bit 8 is the lowest serial bit, so the type check passes and only the checksum can reject the frame
+  bits[8] = !bits[8];
+  RawTimings flipped{timings[0]};
+  int32_t level = -1;
+  for (bool bit : bits) {
+    for (int s = 0; s < (bit ? 2 : 1); s++) {
+      flipped.push_back(level * (bit ? SHORT_US : LONG_US));
+      level = -level;
+    }
   }
-  // Every later symbol has its level swapped to keep the alternation
-  for (; i < timings.size(); i++)
-    flipped.push_back(-timings[i]);
   EXPECT_FALSE(decode(flipped).has_value());
 }
 
