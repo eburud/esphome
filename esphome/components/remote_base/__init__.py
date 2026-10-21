@@ -904,9 +904,14 @@ FUNKBUS_SCHEMA = cv.Schema(
         cv.Required(CONF_COMMAND): cv.hex_int_range(0, 0x7),
         cv.Required(CONF_GROUP): cv.hex_int_range(0, 0x3),
         cv.Required(CONF_ACTION): cv.hex_int_range(0, 0x3),
+        cv.Optional(CONF_LONGPRESS, default=False): cv.boolean,
+    }
+)
+# Status flags are only sent; a binary sensor ignores them when matching
+FUNKBUS_ACTION_SCHEMA = FUNKBUS_SCHEMA.extend(
+    {
         cv.Optional(CONF_BATTERY_LOW, default=False): cv.boolean,
         cv.Optional(CONF_REPEATED, default=False): cv.boolean,
-        cv.Optional(CONF_LONGPRESS, default=False): cv.boolean,
     }
 )
 
@@ -921,8 +926,6 @@ def funkbus_binary_sensor(var, config):
                 ("command", config[CONF_COMMAND]),
                 ("group", config[CONF_GROUP]),
                 ("action", config[CONF_ACTION]),
-                ("battery_low", config[CONF_BATTERY_LOW]),
-                ("repeated", config[CONF_REPEATED]),
                 ("longpress", config[CONF_LONGPRESS]),
             )
         )
@@ -939,7 +942,7 @@ def funkbus_dumper(var, config):
     pass
 
 
-@register_action("funkbus", FunkbusAction, FUNKBUS_SCHEMA)
+@register_action("funkbus", FunkbusAction, FUNKBUS_ACTION_SCHEMA)
 async def funkbus_action(var, config, args):
     template_ = await cg.templatable(config[CONF_SERIAL], args, cg.uint32)
     cg.add(var.set_serial(template_))
