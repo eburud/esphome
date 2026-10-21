@@ -88,6 +88,11 @@ bool peek_symbol(RemoteReceiveData &src, uint32_t width, uint32_t offset) {
   return src.peek_mark(width, offset) || src.peek_space(width, offset);
 }
 
+// A frame that ends on a space has that space merged into the idle gap, so it is missing or too long.
+bool peek_last_symbol(RemoteReceiveData &src, uint32_t width, uint32_t offset) {
+  return peek_symbol(src, width, offset) || !src.is_valid(offset) || src.peek_space_at_least(width, offset);
+}
+
 }  // namespace
 
 void FunkbusProtocol::encode(RemoteTransmitData *dst, const FunkbusData &data) {
@@ -135,10 +140,11 @@ optional<FunkbusData> FunkbusProtocol::decode(RemoteReceiveData src) {
   uint8_t buf[NBYTES] = {0};
   uint32_t offset = 0;
   for (uint8_t i = 0; i < NBITS; i++) {
-    if (peek_symbol(src, SHORT_US, offset) && peek_symbol(src, SHORT_US, offset + 1)) {
+    const auto peek_end = i == NBITS - 1 ? peek_last_symbol : peek_symbol;
+    if (peek_symbol(src, SHORT_US, offset) && peek_end(src, SHORT_US, offset + 1)) {
       set_bit(buf, i, true);
       offset += 2;
-    } else if (peek_symbol(src, LONG_US, offset)) {
+    } else if (peek_end(src, LONG_US, offset)) {
       offset += 1;
     } else {
       return {};
