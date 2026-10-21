@@ -891,8 +891,8 @@ register_protocol_action(
 )
 
 # Funkbus (Berker, Gira, Jung), also sold as Instafunk
-FunkbusData, FunkbusBinarySensor, FunkbusTrigger, FunkbusAction, FunkbusDumper = (
-    declare_protocol("Funkbus")
+FunkbusData, FunkbusBinarySensor, FunkbusTrigger, _, FunkbusDumper = declare_protocol(
+    "Funkbus"
 )
 CONF_SERIAL = "serial"
 CONF_BATTERY_LOW = "battery_low"
@@ -917,7 +917,7 @@ FUNKBUS_ACTION_SCHEMA = FUNKBUS_SCHEMA.extend(
 
 
 @register_binary_sensor("funkbus", FunkbusBinarySensor, FUNKBUS_SCHEMA)
-def funkbus_binary_sensor(var, config):
+def funkbus_binary_sensor(var: MockObj, config: ConfigType) -> None:
     cg.add(
         var.set_data(
             cg.StructInitializer(
@@ -933,32 +933,27 @@ def funkbus_binary_sensor(var, config):
 
 
 @register_trigger("funkbus", FunkbusTrigger, FunkbusData)
-def funkbus_trigger(var, config):
-    pass
+def funkbus_trigger(var: MockObj, config: ConfigType) -> None:
+    """The trigger needs no configuration."""
 
 
 @register_dumper("funkbus", FunkbusDumper)
-def funkbus_dumper(var, config):
-    pass
+def funkbus_dumper(var: MockObj, config: ConfigType) -> None:
+    """The dumper needs no configuration."""
 
 
-@register_action("funkbus", FunkbusAction, FUNKBUS_ACTION_SCHEMA)
-async def funkbus_action(var, config, args):
-    template_ = await cg.templatable(config[CONF_SERIAL], args, cg.uint32)
-    cg.add(var.set_serial(template_))
-    template_ = await cg.templatable(config[CONF_COMMAND], args, cg.uint8)
-    cg.add(var.set_command(template_))
-    template_ = await cg.templatable(config[CONF_GROUP], args, cg.uint8)
-    cg.add(var.set_group(template_))
-    template_ = await cg.templatable(config[CONF_ACTION], args, cg.uint8)
-    cg.add(var.set_action(template_))
-    template_ = await cg.templatable(config[CONF_BATTERY_LOW], args, cg.bool_)
-    cg.add(var.set_battery_low(template_))
-    template_ = await cg.templatable(config[CONF_REPEATED], args, cg.bool_)
-    cg.add(var.set_repeated(template_))
-    template_ = await cg.templatable(config[CONF_LONGPRESS], args, cg.bool_)
-    cg.add(var.set_longpress(template_))
-
+register_protocol_action(
+    "funkbus",
+    "Funkbus",
+    FUNKBUS_ACTION_SCHEMA,
+    (CONF_SERIAL, "serial", cg.uint32),
+    (CONF_COMMAND, "command", cg.uint8),
+    (CONF_GROUP, "group", cg.uint8),
+    (CONF_ACTION, "action", cg.uint8),
+    (CONF_BATTERY_LOW, "battery_low", cg.bool_),
+    (CONF_REPEATED, "repeated", cg.bool_),
+    (CONF_LONGPRESS, "longpress", cg.bool_),
+)
 
 # JVC
 JVCData, JVCBinarySensor, JVCTrigger, _, JVCDumper = declare_protocol("JVC")

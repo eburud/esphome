@@ -32,27 +32,4 @@ class FunkbusProtocol : public RemoteProtocol<FunkbusData> {
 
 DECLARE_REMOTE_PROTOCOL(Funkbus)
 
-template<typename... Ts> class FunkbusAction : public RemoteTransmitterActionBase<Ts...> {
- public:
-  TEMPLATABLE_VALUE(uint32_t, serial)
-  TEMPLATABLE_VALUE(uint8_t, command)
-  TEMPLATABLE_VALUE(uint8_t, group)
-  TEMPLATABLE_VALUE(uint8_t, action)
-  TEMPLATABLE_VALUE(bool, battery_low)
-  TEMPLATABLE_VALUE(bool, repeated)
-  TEMPLATABLE_VALUE(bool, longpress)
-
-  void encode(RemoteTransmitData *dst, Ts... x) override {
-    FunkbusData data{};
-    data.serial = this->serial_.value(x...);
-    data.command = this->command_.value(x...);
-    data.group = this->group_.value(x...);
-    data.action = this->action_.value(x...);
-    data.battery_low = this->battery_low_.value(x...);
-    data.repeated = this->repeated_.value(x...);
-    data.longpress = this->longpress_.value(x...);
-    FunkbusProtocol().encode(dst, data);
-  }
-};
-
 }  // namespace esphome::remote_base

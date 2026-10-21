@@ -40,6 +40,14 @@ binary_sensor:
       address_2: 0x12
       command: 0x100BCBD
   - platform: remote_receiver
+    name: Funkbus Button
+    funkbus:
+      serial: 0x12345
+      command: 4
+      group: 0
+      action: 2
+      longpress: true
+  - platform: remote_receiver
     name: Hob2Hood Light On
     hob2hood:
       command: light_on
