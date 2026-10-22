@@ -15,8 +15,8 @@ struct FunkbusData {
 
   // battery_low and repeated are status flags, ignored by operator== so a binary sensor keeps matching
   bool operator==(const FunkbusData &rhs) const {
-    return serial == rhs.serial && command == rhs.command && group == rhs.group && action == rhs.action &&
-           longpress == rhs.longpress;
+    return this->serial == rhs.serial && this->command == rhs.command && this->group == rhs.group &&
+           this->action == rhs.action && this->longpress == rhs.longpress;
   }
 };
 
